@@ -1,133 +1,217 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { FormProvider, useForm } from 'react-hook-form';
-import { formAdtCreateSchema, TFormAdtCreateValues } from "./schemas";
+import { useState, useRef } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Title } from "@/components/shared/title";
-import { FormInput } from "@/components/shared/form";
-import { Button } from "@/components/ui/button";
-import { createAdt } from "@/app/actions";
-import { prisma } from "@/prisma/prisma-client";
-import { getUserSession } from "@/lib/get-user-session";
-import { Category } from "@prisma/client";
+import { formAdtCreateSchema, type TFormAdtCreateValues } from './schemas';
+import Image from 'next/image';
+import { Category } from '@prisma/client';
+import { useRouter } from 'next/navigation';
 
-interface Props {
-    onClose?: VoidFunction;
+interface CreateAdtFormProps {
+  categories: Category[];
 }
 
-export const AdtCreateForm: React.FC<Props> = ({onClose}) => {
-    const [categories, setCategories] = useState<Category[]>([]);
+export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            const categoriesData = await fetch('/api/category').then(res => res.json());
-            setCategories(categoriesData);
-        };
-
-        fetchCategories();
-    }, []);
-    
-    // const currentUser = await getUserSession();
-
-    const form = useForm<TFormAdtCreateValues>({
-        // resolver: zodResolver(formAdtCreateSchema),
-        defaultValues: {
-            title: '',
-            categories: categories,
-            price: '0',
-            description: '',
-            image: '',
-            location: '',
-        }
-    })
-
-    const onSubmit = async (data: TFormAdtCreateValues) => {
-        try {
-            await createAdt({
-                title: data.title,
-                price: data.price.toString(),
-                description: data.description,
-                image: data.image,
-                location: data.location,
-                // categories: data.categories,
-            }, categories)
-
-            // if (!resp?.ok) {
-            //     throw Error();
-            // }
-            
-            
-
-            onClose?.()
-        } catch (error) {
-            console.error('Error [LOGIN]', error)
-        }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch
+  } = useForm<TFormAdtCreateValues>({
+    resolver: zodResolver(formAdtCreateSchema),
+    defaultValues: {
+      categoryIds: [],
     }
+  });
 
-    return (
-        <FormProvider {...form}>
-            <form className="flex flex-col gap-5" onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="flex justify-between items-center">
-                    <div className="mr-2">
-                        <Title text="Создать объявление" size='md' className="font-bold" />
-                        <p className="text-gray-400">Заполните все поля для создания объявления</p>
-                    </div>
-                </div>
+  const selectedCategories = watch('categoryIds');
 
-                <FormInput name='title' label='Заголовок' required />
-                
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Категории</label>
-                    <select 
-                        multiple
-                        {...form.register('categories')}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-200"
-                    >
-                        {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                                {category.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+        setValue('image', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-                <FormInput 
-                    name='price' 
-                    label='Цена' 
-                    type="number"
-                    required 
-                />
+  const onSubmit = async (data: TFormAdtCreateValues) => {
+    try {
+      setIsSubmitting(true);
+      
+      const response = await fetch('/api/adt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Описание</label>
-                    <textarea
-                        {...form.register('description')}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-200"
-                        rows={4}
-                    />
-                </div>
+      if (!response.ok) {
+        throw new Error('Ошибка при создании объявления');
+      }
 
-                <FormInput 
-                    name='image' 
-                    label='Ссылка на изображение'
-                    required 
-                />
+      reset();
+      setPreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      // Здесь можно добавить уведомление об успешном создании
+      const data_f = await response.json();
+      // Редирект на страницу созданного объявления
+      router.push(`/adt/${data_f.id}`);
+      // Обновляем кэш Next.js
+    //   router.refresh();
+      
+    } catch (error) {
+      console.error('Error:', error);
+      // Здесь можно добавить обработку ошибок
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-                <FormInput 
-                    name='location' 
-                    label='Местоположение'
-                    required 
-                />
-            
-                <Button 
-                    loading={form.formState.isSubmitting} 
-                    className="h-12 text-base" 
-                    type='submit'
-                >
-                    Создать объявление
-                </Button>
-            </form>
-        </FormProvider>
-    )
+  const handleCategoryChange = (categoryId: number) => {
+    const currentCategories = watch('categoryIds') || [];
+    const updatedCategories = currentCategories.includes(categoryId)
+      ? currentCategories.filter(id => id !== categoryId)
+      : [...currentCategories, categoryId];
+    setValue('categoryIds', updatedCategories);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto p-6 space-y-6">
+      <div>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          Заголовок*
+        </label>
+        <input
+          type="text"
+          id="title"
+          {...register('title')}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+        {errors.title && (
+          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          Описание
+        </label>
+        <textarea
+          id="description"
+          rows={4}
+          {...register('description')}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+        {errors.description && (
+          <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+          Цена
+        </label>
+        <input
+          type="text"
+          id="price"
+          {...register('price')}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          placeholder="Например: 1000 ₽"
+        />
+        {errors.price && (
+          <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Категории*
+        </label>
+        <div className="mt-2 space-y-2">
+          {categories.map((category) => (
+            <label key={category.id} className="inline-flex items-center mr-4">
+              <input
+                type="checkbox"
+                className="form-checkbox h-4 w-4 text-indigo-600"
+                onChange={() => handleCategoryChange(category.id)}
+                checked={selectedCategories?.includes(category.id)}
+              />
+              <span className="ml-2">{category.name}</span>
+            </label>
+          ))}
+        </div>
+        {errors.categoryIds && (
+          <p className="mt-1 text-sm text-red-600">{errors.categoryIds.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+          Местоположение
+        </label>
+        <input
+          type="text"
+          id="location"
+          {...register('location')}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+        {errors.location && (
+          <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Изображение
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          ref={fileInputRef}
+          className="mt-1 block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-semibold
+            file:bg-indigo-50 file:text-indigo-700
+            hover:file:bg-indigo-100"
+        />
+        {preview && (
+          <div className="mt-2 relative h-48 w-48">
+            <Image
+              src={preview}
+              alt="Preview"
+              fill
+              className="object-cover rounded-md"
+            />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+        >
+          {isSubmitting ? 'Создание...' : 'Создать объявление'}
+        </button>
+      </div>
+    </form>
+  );
 }

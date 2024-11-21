@@ -1,13 +1,18 @@
 // 'use client'
 
 import React from 'react';
-import { ImagePlus, X } from 'lucide-react';
-import { AdtCreateForm } from '@/components/shared/adt-create/adt-create-form';
+import { PrismaClient } from '@prisma/client';
+import AdtCreateForm from '@/components/shared/adt-create/adt-create-form';
 
-export default function CreateListing() {
+const prisma = new PrismaClient();
+
+export default async function CreateListing() {
+  const categories = await prisma.category.findMany();
+
+  
   return (
 
-    <AdtCreateForm />
+    <AdtCreateForm categories={categories} />
 
 
     // <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
