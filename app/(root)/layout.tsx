@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
+import { Suspense } from "react";
+import Header from "@/components/Header";
 
 
 export const metadata: Metadata = {
@@ -14,12 +16,11 @@ export default function HomeLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
+    <main className="min-h-screen">
+    <Suspense>
+      <Header />
+    </Suspense>
+    {children}
+  </main>
   );
 }

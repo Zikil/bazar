@@ -1,7 +1,7 @@
 import React from 'react';
 // import { useParams } from 'next/navigation';
 import { MapPin, Calendar, Phone, MessageCircle, Share2, Flag, Heart } from 'lucide-react';
-import { adts } from '@/data/adt';
+// import { adts } from '@/data/adt';
 import { prisma } from '@/prisma/prisma-client';
 import Header from '@/components/Header';
 import { notFound } from 'next/navigation';
@@ -27,12 +27,12 @@ export default async function AdtPage({params: { id } }: { params: { id: string 
 
     return (
         <>
-        <Header />
+
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <img src={adt.image} alt={adt.title} className="w-full h-[400px] object-cover" />
+                <img src={String(adt.image)} alt={adt.title} className="w-full h-[400px] object-cover" />
                 <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                         <h1 className="text-2xl font-semibold">{adt.title}</h1>
@@ -79,8 +79,8 @@ export default async function AdtPage({params: { id } }: { params: { id: string 
                         className="w-12 h-12 rounded-full"
                     />
                     <div>
-                        <h3 className="font-semibold">{user.name}</h3>
-                        <p className="text-sm text-gray-500">Member {String(user.createdAt)}</p>
+                        <h3 className="font-semibold">{user?.name}</h3>
+                        <p className="text-sm text-gray-500">Member {String(user?.createdAt)}</p>
                     </div>
                 </div>
 

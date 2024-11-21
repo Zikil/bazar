@@ -1,13 +1,33 @@
-import React from 'react';
+import React, { use } from 'react';
 import { Settings, Package, Heart, Bell } from 'lucide-react';
 import ListingCard from '@/components/ListingCard';
 import { adts } from '@/data/adt';
 import Header from '@/components/Header';
+import { getUserSession } from '@/lib/get-user-session';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/prisma/prisma-client';
+import Link from 'next/link';
 
-export default function Profile() {
+export default async function Profile() {
+  const session = await getUserSession()
+  
+  if (!session) {
+    return redirect('/not-auth')
+  }
+  
+  const user = await prisma.user.findFirst({
+    where: {
+      id: Number(session.id)
+    },
+    include: {
+      adts: true
+    }
+  })
+
+  console.log(user?.adts)
+
   return (
     <>
-    <Header />
 
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white rounded-xl shadow-sm mb-8">
@@ -21,13 +41,13 @@ export default function Profile() {
         <div className="pt-16 pb-8 px-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold">John Doe</h1>
+              <h1 className="text-2xl font-bold">{session.name}</h1>
               <p className="text-gray-500">San Francisco, CA</p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+            <Link href='/profile/settings' className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
               <Settings className="h-5 w-5" />
               <span>Edit Profile</span>
-            </button>
+            </Link>
           </div>
         </div>
         <div className="border-t">
@@ -55,8 +75,8 @@ export default function Profile() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {adts.slice(0, 3).map((adt) => (
-          <ListingCard key={adt.id} {...adt} />
+        {user?.adts.map((adt) => (
+          <ListingCard key={adt.id} id={String(adt.id)} image={adt.image} {...adt}/>
         ))}
       </div>
     </main>

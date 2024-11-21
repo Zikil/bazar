@@ -2,8 +2,14 @@
 import React from 'react';
 import { Search, PlusCircle, Bell, User } from 'lucide-react';
 import Link from 'next/link';
+import { useSession, signIn } from 'next-auth/react';
+import { Button } from './ui/button';
+import { ProfileButton } from './shared/profile-button';
+import { AuthModal } from './shared/modals/auth-modal/auth-modal';
 
 export default function Header() {
+  const [openAuthModal, setOpenAuthModal] = React.useState(false)
+
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,12 +45,17 @@ export default function Header() {
                 2
               </span>
             </button>
-            <Link
+
+            <AuthModal open={openAuthModal} onClose={() => setOpenAuthModal(false)} />
+            
+            <ProfileButton onClickSignIn={() => setOpenAuthModal(true)} />
+
+            {/* <Link
               href="/profile"
               className="p-2 hover:bg-gray-100 rounded-full"
             >
               <User className="h-6 w-6 text-gray-600" />
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

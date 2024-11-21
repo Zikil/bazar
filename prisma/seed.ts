@@ -12,6 +12,7 @@ async function up() {
                 password: hashSync("123456", 10),
                 // verified: new Date(),
                 role: "USER",
+                provider: 'credentials'
             },
             {
                 name: "user2",
@@ -19,6 +20,7 @@ async function up() {
                 password: hashSync("123456", 10),
                 // verified: new Date(),
                 role: "USER",
+                provider: 'credentials'
             },
             {
                 name: "admin",
@@ -26,6 +28,7 @@ async function up() {
                 password: hashSync("123456", 10),
                 // verified: new Date(),
                 role: "ADMIN",
+                provider: 'credentials'
             }
         ]
     });

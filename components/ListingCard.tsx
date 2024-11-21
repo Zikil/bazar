@@ -11,7 +11,7 @@ interface ListingCardProps {
   price?: string;
   location?: string;
   image?: string;
-  date: string;
+  date?: string;
 }
 
 export default function ListingCard({ id, title, price, location, image, date }: ListingCardProps) {
