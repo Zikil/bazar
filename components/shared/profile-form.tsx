@@ -17,22 +17,22 @@ interface Props {
 }
 
 export const ProfileForm: React.FC<Props> = ({ data }) => {
-    const form = useForm({
+    const form = useForm<TFormRegisterValues>({
         resolver: zodResolver(formRegisterSchema),
         defaultValues: {
-          name: data.name,
+          name: data.name || '',
           email: data.email,
           password: '',
           confirmPassword: '',
         },
       });
 
-    const onSubmit = async (data: TFormRegisterValues) => {
+    const onSubmit = async (formData: TFormRegisterValues) => {
         try {
           await updateUserInfo({
-            email: data.email,
-            name: data.name,
-            password: data.password,
+            email: formData.email,
+            name: formData.name,
+            password: formData.password,
           });
     
         //   toast.error('Данные обновлены 📝', {

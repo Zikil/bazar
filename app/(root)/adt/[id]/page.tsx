@@ -1,20 +1,22 @@
 import React from 'react';
 // import { useParams } from 'next/navigation';
 import { MapPin, Calendar, Phone, MessageCircle, Share2, Flag, Heart } from 'lucide-react';
-// import { adts } from '@/data/adt';
 import { prisma } from '@/prisma/prisma-client';
-import Header from '@/components/Header';
 import { notFound } from 'next/navigation';
 
-export default async function AdtPage({params: { id } }: { params: { id: string } }) {
+type Params = Promise<{ id: string }>
+
+export default async function AdtPage(props: { params: Params }) {
+    const params = await props.params;
+
     const adt = await prisma.adt.findUnique({
         where: {
-          id: Number(id),
+            id: Number(params.id),
         },
         include: {
             user: true
         }
-      })
+    })
 
     if (!adt) {
         return notFound();

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { formAdtCreateSchema } from '@/components/shared/adt-create/schemas';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
 import { getUserSession } from '@/lib/get-user-session';
 
 const prisma = new PrismaClient();

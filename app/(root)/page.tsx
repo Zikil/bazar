@@ -1,11 +1,8 @@
 // "use client"
 
 import Categories from "@/components/Categories";
-import Header from "@/components/Header";
 import ListingCard from "@/components/ListingCard";
-import { adts } from "@/data/adt";
 import { prisma } from "@/prisma/prisma-client";
-import Image from "next/image";
 
 export default async function Home() {
   const adts = await prisma.adt.findMany()
@@ -28,7 +25,7 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {adts.map((adt) => (
-              <ListingCard key={adt.id} title={adt.title} image={adt.image} price={adt.price} location={adt.location} date={String(adt.createdAt)} id={adt.id} />
+              <ListingCard key={adt.id} title={adt.title} image={String(adt.image)} price={String(adt.price)} location={String(adt.location)} date={String(adt.createdAt)} id={String(adt.id)} />
             ))}
           </div>
         </main>
