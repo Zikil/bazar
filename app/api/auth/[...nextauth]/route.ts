@@ -5,6 +5,8 @@ import { prisma } from "@/prisma/prisma-client";
 import { compare, hashSync } from "bcrypt";
 import { Role } from "@prisma/client";
 
+export const dynamic = 'force-dynamic';
+
 export const authOptions: AuthOptions = {
     providers: [
         GithubProvider({
@@ -52,7 +54,7 @@ export const authOptions: AuthOptions = {
                 // verified //
 
                 return {
-                    id: String(findUser.id),
+                    id: findUser.id,
                     
                     email: findUser.email,
                     name: findUser.name,
@@ -81,7 +83,7 @@ export const authOptions: AuthOptions = {
                 const findUser = await prisma.user.findFirst({
                     where: {
                         OR: [
-                            { provider: account?.provider, providerId: account?.providerId },
+                            { provider: account?.provider, providerId: account?.providerId as string },
                             { email: user.email }
                         ]
                     }
@@ -140,7 +142,7 @@ export const authOptions: AuthOptions = {
         session({ session, token }) {
             if (session?.user) {
                 session.user.id = token.id,
-                session.user.email = token.email,
+                // session.user.email = token.email,
                 session.user.role = token.role
             }
 
