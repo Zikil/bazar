@@ -31,7 +31,7 @@ export default async function Profile() {
       <div className="bg-white rounded-xl shadow-sm mb-8">
         <div className="relative h-48 rounded-t-xl bg-gradient-to-r from-indigo-500 to-purple-600">
           <img
-            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150"
+            src=''
             alt="Profile"
             className="absolute -bottom-12 left-8 w-24 h-24 rounded-full border-4 border-white"
           />

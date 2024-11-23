@@ -32,7 +32,7 @@ export const LoginForm: React.FC<Props> = ({onClose}) => {
                 toast.error("Incorrect login or password")
                 throw Error();
             }
-            
+            toast.success("Login successful")
             onClose?.()
         } catch (error) {
             toast.error("Error login")
