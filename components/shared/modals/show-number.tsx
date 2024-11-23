@@ -9,15 +9,15 @@ interface Props {
 
 export const ShowNumberModal: React.FC<Props> = ({ open, onClose}) => {
 
-    const [ session, setSession ] = React.useState<any>(null)
+    // const [ session, setSession ] = React.useState(null)
 
-    React.useEffect(() => {
-        const getSession = async () => {
-            const userSession = await getUserSession()
-            setSession(userSession)
-        }
-        getSession()
-    }, [])
+    // React.useEffect(() => {
+    //     const getSession = async () => {
+    //         const userSession = await getUserSession()
+    //         setSession(userSession)
+    //     }
+    //     getSession()
+    // }, [])
     // const session = await getUserSession()
     const handleClose = () => {
         onClose()
