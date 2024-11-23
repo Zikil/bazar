@@ -2,11 +2,26 @@
 
 import Categories from "@/components/Categories";
 import ListingCard from "@/components/ListingCard";
+import { getUserSession } from "@/lib/get-user-session";
 import { prisma } from "@/prisma/prisma-client";
 
 export default async function Home() {
   const adts = await prisma.adt.findMany()
+  const session = await getUserSession()
   
+  // if (!session) {
+  //   return redirect('/not-auth')
+  // }
+  
+  // const user = await prisma.user.findFirst({
+  //   where: {
+  //     id: Number(session?.id)
+  //   }
+  // })
+
+  // console.log(user)
+  console.log("session",session)
+
   return (
     <>
       <div className="min-h-screen bg-gray-100">

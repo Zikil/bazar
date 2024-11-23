@@ -22,7 +22,7 @@ export const authOptions: AuthOptions = {
                 }
             }),
         CredentialsProvider({
-            name: 'Credentials',
+            name: 'credentials',
             credentials: {
                 email: {label: 'Email', type: 'text'},
                 password: {label: 'Password', type: 'password'},
@@ -71,7 +71,7 @@ export const authOptions: AuthOptions = {
     callbacks: {
         async signIn({ user, account}) {
             try {
-                if (account?.provaider === 'credentials') {
+                if (account?.provider === 'credentials') {
                     return true
                 }
 

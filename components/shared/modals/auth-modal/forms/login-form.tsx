@@ -31,8 +31,6 @@ export const LoginForm: React.FC<Props> = ({onClose}) => {
                 throw Error();
             }
             
-
-
             onClose?.()
         } catch (error) {
             console.error('Error [LOGIN]', error)

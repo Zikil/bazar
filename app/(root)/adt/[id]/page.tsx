@@ -1,15 +1,19 @@
+// "use client"
+
 import React from 'react';
 // import { useParams } from 'next/navigation';
 import { MapPin, Calendar, Phone, MessageCircle, Share2, Flag, Heart } from 'lucide-react';
 import { prisma } from '@/prisma/prisma-client';
 import { notFound } from 'next/navigation';
+import { ShowNumberModal } from '@/components/shared/modals/show-number';
 
 type Params = Promise<{ id: string }>
 
 export default async function AdtPage(props: { params: Params }) {
+    // const [ openShowNumberModal, setOpenShowNumberModal ] = React.useState(false)
     const params = await props.params;
 
-    const adt = await prisma.adt.findUnique({
+    const adt = await prisma.adt.findFirst({
         where: {
             id: Number(params.id),
         },
@@ -29,6 +33,7 @@ export default async function AdtPage(props: { params: Params }) {
 
     return (
         <>
+        {/* <ShowNumberModal open={openShowNumberModal} onClose={() => setOpenShowNumberModal(false)} /> */}
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -54,8 +59,7 @@ export default async function AdtPage(props: { params: Params }) {
 
                     <h2 className="font-semibold text-lg mb-3">Description</h2>
                     <p className="text-gray-600 mb-6">
-                        This is a detailed description of the listing. It includes all the important information
-                        about the item, its condition, and any special features or considerations.
+                        {adt.description}
                     </p>
 
                     <div className="flex gap-3">
@@ -87,9 +91,10 @@ export default async function AdtPage(props: { params: Params }) {
                 </div>
 
                 <div className="space-y-3">
-                    {/* TODO всплывающее окно для показа номера */}
-
-                    <button className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                    <button 
+                        // onClick={() => setOpenShowNumberModal(true)}
+                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700" 
+                    >
                         <Phone className="h-5 w-5" />
                         <span>Show Phone Number</span>
                     </button>
