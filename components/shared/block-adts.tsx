@@ -6,9 +6,9 @@ import ListingCard from '../ListingCard'
 import { Adt } from '@prisma/client'
 import toast from 'react-hot-toast'
 
-interface BlockAdtsProps {}
+// interface BlockAdtsProps {}
 
-export const BlockAdts: FC<BlockAdtsProps> = () => {
+export const BlockAdts: FC = () => {
 
   // Состояния для хранения объявлений и управления их отображением
   const [adts, setAdts] = useState<Adt[]>([]) // Массив объявлений

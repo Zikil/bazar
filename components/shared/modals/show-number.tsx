@@ -4,10 +4,11 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getUserSession } from "@/lib/get-user-session";
 import React from "react";
 import { Phone } from "lucide-react";
+import { Session } from "next-auth";
 
 interface Props {
     phoneNumber: string;
-    session: any;
+    session: Session["user"] | null;
 }
 
 export const ShowNumberModal: React.FC<Props> = ({ phoneNumber, session }) => {
