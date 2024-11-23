@@ -24,7 +24,7 @@ export default function ListingCard({ id, title, price, location, image, date }:
             alt={title}
             className="w-full h-full object-cover rounded-t-xl"
           />
-          <button 
+          {/* <button 
             className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white"
             onClick={(e) => {
               e.preventDefault();
@@ -32,7 +32,7 @@ export default function ListingCard({ id, title, price, location, image, date }:
             }}
           >
             <Heart className="h-5 w-5 text-gray-600" />
-          </button>
+          </button> */}
         </div>
         <div className="p-4">
           <div className="flex justify-between items-start mb-2">

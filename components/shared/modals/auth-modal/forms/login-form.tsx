@@ -6,6 +6,7 @@ import { Title } from "@/components/shared/title";
 import { FormInput } from "@/components/shared/form";
 import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
+import toast from "react-hot-toast";
 
 interface Props {
     onClose?: VoidFunction;
@@ -28,11 +29,13 @@ export const LoginForm: React.FC<Props> = ({onClose}) => {
             })
 
             if (!resp?.ok) {
+                toast.error("Incorrect login or password")
                 throw Error();
             }
             
             onClose?.()
         } catch (error) {
+            toast.error("Error login")
             console.error('Error [LOGIN]', error)
         }
     }
@@ -42,8 +45,8 @@ export const LoginForm: React.FC<Props> = ({onClose}) => {
             <form className="flex flex-col gap-5" onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="fles justify-between items-center">
                     <div className="mr-2">
-                        <Title text="Вход в аккаунт" size='md' className="font-bold" />
-                        <p className="text-gray-400">Введите свою почту, чтобы войти</p>
+                        <Title text="Login" size='md' className="font-bold" />
+                        <p className="text-gray-400">Enter your email to login</p>
                     </div>
                     {/* <img src="..." /> */}
                 </div>
@@ -52,7 +55,7 @@ export const LoginForm: React.FC<Props> = ({onClose}) => {
             
                 <Button loading={form.formState.isSubmitting} className="h-12 text-base" type='submit' >
                     {
-                        'Войти'
+                        'Login'
                     }
                 </Button>
             </form>

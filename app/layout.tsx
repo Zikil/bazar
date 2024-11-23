@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react"
+import { Toaster } from 'react-hot-toast';
 
 
 export default function RootLayout({
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body>
         <SessionProvider>
           {children}
+          <Toaster />
         </SessionProvider>
       </body>
     </html>

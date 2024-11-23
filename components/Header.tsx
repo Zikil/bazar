@@ -6,6 +6,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { Button } from './ui/button';
 import { ProfileButton } from './shared/profile-button';
 import { AuthModal } from './shared/modals/auth-modal/auth-modal';
+import AddButton from './shared/add-button';
 
 export default function Header() {
   const [openAuthModal, setOpenAuthModal] = React.useState(false)
@@ -42,24 +43,15 @@ export default function Header() {
               <Search className="h-6 w-6 text-gray-600" />
             </button>
             
-            <Link
-              href="/adt/create"
-              className="p-2 hover:bg-gray-100 rounded-full"
-            >
-              <PlusCircle className="h-6 w-6 text-indigo-600" />
-            </Link>
+            <AddButton />
 
             <ProfileButton onClickSignIn={() => setOpenAuthModal(true)} />
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-4">
-            <Link
-              href="/adt/create"
-              className="p-2 hover:bg-gray-100 rounded-full"
-            >
-              <PlusCircle className="h-6 w-6 text-indigo-600" />
-            </Link>
+            <AddButton />
+
             {/* <button className="relative p-2 hover:bg-gray-100 rounded-full">
               <Bell className="h-6 w-6 text-gray-600" />
               <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">

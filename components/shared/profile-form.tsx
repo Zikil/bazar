@@ -11,6 +11,7 @@ import { Title } from "./title";
 import { FormInput } from "./form/form-input";
 import { Button } from "../ui/button";
 import { updateUserInfo } from "@/app/actions";
+import toast from "react-hot-toast";
 
 interface Props {
     data: User
@@ -35,13 +36,13 @@ export const ProfileForm: React.FC<Props> = ({ data }) => {
             password: formData.password,
           });
     
-        //   toast.error('Данные обновлены 📝', {
-        //     icon: '✅',
-        //   });
+          toast.success('Data updated 📝', {
+            icon: '✅',
+          });
         } catch (error) {
-        //   return toast.error('Ошибка при обновлении данных', {
-        //     icon: '❌',
-        //   });
+          return toast.error('Error updating data', {
+            icon: '❌',
+          });
         console.log('error update', error)
         }
       };

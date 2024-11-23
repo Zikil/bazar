@@ -7,6 +7,7 @@ import { formAdtCreateSchema, type TFormAdtCreateValues } from './schemas';
 import Image from 'next/image';
 import { Category } from '@prisma/client';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface CreateAdtFormProps {
   categories: Category[];
@@ -59,7 +60,9 @@ export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка при создании объявления');
+        const err = await response.text()
+        toast.error("Error creating adt: " + err)
+        throw new Error('Error creating adt');
       }
 
       reset();
@@ -67,6 +70,8 @@ export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+
+      toast.success("Adt created successfully")
       // Здесь можно добавить уведомление об успешном создании
       const data_f = await response.json();
       // Редирект на страницу созданного объявления
@@ -76,6 +81,7 @@ export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
       
     } catch (error) {
       console.error('Error:', error);
+        //   toast.error("Error creating adt: " + error)
       // Здесь можно добавить обработку ошибок
     } finally {
       setIsSubmitting(false);

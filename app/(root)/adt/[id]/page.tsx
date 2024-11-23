@@ -6,13 +6,15 @@ import { MapPin, Calendar, Phone, MessageCircle, Share2, Flag, Heart } from 'luc
 import { prisma } from '@/prisma/prisma-client';
 import { notFound } from 'next/navigation';
 import { ShowNumberModal } from '@/components/shared/modals/show-number';
+import { getUserSession } from '@/lib/get-user-session';
 
 type Params = Promise<{ id: string }>
 
 export default async function AdtPage(props: { params: Params }) {
-    // const [ openShowNumberModal, setOpenShowNumberModal ] = React.useState(false)
     const params = await props.params;
 
+
+    const session = await getUserSession();
     const adt = await prisma.adt.findFirst({
         where: {
             id: Number(params.id),
@@ -33,7 +35,6 @@ export default async function AdtPage(props: { params: Params }) {
 
     return (
         <>
-        {/* <ShowNumberModal open={openShowNumberModal} onClose={() => setOpenShowNumberModal(false)} /> */}
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -91,13 +92,14 @@ export default async function AdtPage(props: { params: Params }) {
                 </div>
 
                 <div className="space-y-3">
-                    <button 
+                    <ShowNumberModal phoneNumber={String(adt.user?.email)} session={session} />
+                    {/* <button 
                         // onClick={() => setOpenShowNumberModal(true)}
                         className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700" 
                     >
                         <Phone className="h-5 w-5" />
                         <span>Show Phone Number</span>
-                    </button>
+                    </button> */}
                     <button className="w-full flex items-center justify-center gap-2 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-50">
                         <MessageCircle className="h-5 w-5" />
                         <span>Send Message (In development)</span>

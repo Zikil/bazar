@@ -19,6 +19,7 @@ export const AuthModal: React.FC<Props> = ({ open, onClose}) => {
 
     const handleClose = () => {
         onClose()
+        setType('login')
     }
 
     return (
@@ -31,7 +32,7 @@ export const AuthModal: React.FC<Props> = ({ open, onClose}) => {
 
                 <hr />
                 <div className="flex gap-2">
-                    <Button 
+                    {/* <Button 
                         variant='secondary'
                         onClick={() => 
                             signIn('github', {
@@ -44,9 +45,9 @@ export const AuthModal: React.FC<Props> = ({ open, onClose}) => {
                     >
                         <img className="2-6 h-6" src="https://github.githubassets.com/favicons/favicon.svg" />
                         GitHub
-                    </Button>
+                    </Button> */}
 
-                    <Button 
+                    {/* <Button 
                         variant='secondary'
                         onClick={() => 
                             signIn('google', {
@@ -59,11 +60,11 @@ export const AuthModal: React.FC<Props> = ({ open, onClose}) => {
                     >
                         <img className="2-6 h-6" src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" />
                         Google
-                    </Button>
+                    </Button> */}
 
                 </div>
                 <Button variant='outline' onClick={onSwitchType} type='button' className="h-12">
-                    {type === 'login' ? 'Регистрация' : 'Войти'}
+                    {type === 'login' ? 'Sign Up' : 'Login'}
                 </Button>
             </DialogContent>
 

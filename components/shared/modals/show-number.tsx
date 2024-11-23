@@ -1,45 +1,46 @@
-import { Dialog } from "@/components/ui/dialog";
+'use client'
+
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getUserSession } from "@/lib/get-user-session";
 import React from "react";
+import { Phone } from "lucide-react";
 
 interface Props {
-    open: boolean;
-    onClose: () => void;
+    phoneNumber: string;
+    session: any;
 }
 
-export const ShowNumberModal: React.FC<Props> = ({ open, onClose}) => {
-
-    // const [ session, setSession ] = React.useState(null)
+export const ShowNumberModal: React.FC<Props> = ({ phoneNumber, session }) => {
+    const [open, setOpen] = React.useState(false);
+    // const [session, setSession] = React.useState<any>(null);
 
     // React.useEffect(() => {
     //     const getSession = async () => {
-    //         const userSession = await getUserSession()
-    //         setSession(userSession)
-    //     }
-    //     getSession()
-    // }, [])
-    // const session = await getUserSession()
-    const handleClose = () => {
-        onClose()
-    }
+    //         const userSession = await getUserSession();
+    //         setSession(userSession);
+    //     };
+    //     getSession();
+    // }, []);
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            {/* <DialogContent className="w-[450px] bg-white p-10"> */}
-                {/* {
-                    // session && (
-                    //     <h1 className="text-2xl font-bold mb-4">892348924823</h1>
-                    // ) 
-                } */}
+        <>
+            <button
+                onClick={() => setOpen(true)}
+                className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+            >
+                <Phone className="h-5 w-5" />
+                <span>Show Phone Number</span>
+            </button>
 
-                {/* <h1 className="text-2xl font-bold mb-4">892348924823</h1> */}
-                <hr />
-                <div className="flex gap-2">
-                    
-
-                </div>
-            {/* </DialogContent> */}
-
-        </Dialog>
-    )
-}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="w-[450px] bg-white p-10">
+                    {session ? (
+                        <h1 className="text-2xl font-bold mb-4">{phoneNumber}</h1>
+                    ) : (
+                        <h2 className="text-xl text-center">Please login to see the phone number</h2>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+};
