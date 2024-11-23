@@ -19,9 +19,9 @@ export const ShowNumberModal: React.FC<Props> = ({ open, onClose}) => {
         getSession()
     }, [])
     // const session = await getUserSession()
-    // const handleClose = () => {
-    //     onClose()
-    // }
+    const handleClose = () => {
+        onClose()
+    }
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
