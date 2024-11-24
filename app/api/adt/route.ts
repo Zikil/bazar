@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { formAdtCreateSchema } from '@/components/shared/adt-create/schemas';
 import { getUserSession } from '@/lib/get-user-session';
 
@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 // GET функция для получения списка объявлений с пагинацией
 export async function GET(request: Request) {
   try {
+    console.log("request",request)
     // Получаем параметры из URL
     const { searchParams } = new URL(request.url);
     
@@ -17,22 +18,69 @@ export async function GET(request: Request) {
     const limit = Number(searchParams.get('limit')) || 10;
     const skip = (page - 1) * limit;
 
-    // Получаем общее количество объявлений для пагинации
-    const total = await prisma.adt.count();
+    // Получаем параметры фильтрации
+    const category = searchParams.get('category');
+    const cityId = searchParams.get('cityId');
 
-    // Получаем объявления с учетом пагинации
+
+    // Формируем условия фильтрации
+    const where: Prisma.AdtWhereInput = {};
+    
+    if (category) {
+      // Сначала находим категорию и ее дочерние категории
+      const categoryWithChildren = await prisma.category.findFirst({
+        where: { slug: category },
+        include: {
+          children: true
+        }
+      });
+
+      if (categoryWithChildren) {
+        // Получаем ID текущей категории и всех дочерних категорий
+        const categoryIds = [
+          categoryWithChildren.id,
+          ...categoryWithChildren.children.map(child => child.id)
+        ];
+
+        // Используем IN для поиска объявлений во всех категориях
+        where.categoryId = {
+          in: categoryIds
+        };
+      } else {
+        where.category = {
+          slug: category
+        };
+      }
+    }
+    if (cityId) {
+      where.cityId = cityId;
+    }
+
+
+    // Получаем общее количество объявлений для пагинации с учетом фильтров
+    const total = await prisma.adt.count({ where });
+
+    // Получаем объявления с учетом пагинации и фильтров
     const adts = await prisma.adt.findMany({
+      where,
       skip,
       take: limit,
       include: {
-        categories: true,
+        category: true,
         user: {
           select: {
             id: true,
             name: true,
             email: true
           }
-        }
+        },
+        city: {
+          select: {
+            nameEn: true,
+            nameAr: true
+          } 
+        },
+        country: true
       },
       orderBy: {
         createdAt: 'desc' // Сортировка по дате создания (новые первыми)
@@ -89,22 +137,21 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
-
     // Создание объявления
     const adt = await prisma.adt.create({
       data: {
         title: validatedData.title,
         description: validatedData.description,
         price: validatedData.price,
-        location: validatedData.location,
+        address: validatedData.address,
         image: validatedData.image,
         userId: user.id,
-        categories: {
-          connect: validatedData.categoryIds.map(id => ({ id }))
-        }
+        categoryId: validatedData.categoryId,
+        countryId: validatedData.countryId,
+        cityId: validatedData.cityId
       },
       include: {
-        categories: true
+        category: true
       }
     });
     

@@ -9,14 +9,17 @@ export const formAdtCreateSchema = z.object({
       .max(1000, 'Описание не может быть длиннее 1000 символов')
       .nullable(),
     price: z.string()
-      .min(1, 'Укажите цену')
+    //   .transform((val) => (val ? parseFloat(val) : null))
       .nullable(),
-    location: z.string()
-      .min(2, 'Укажите местоположение')
-      .max(100, 'Слишком длинное название местоположения')
-      .nullable(),
+    countryId: z.string().min(1, 'Выберите страну'),
+    cityId: z.string().min(1, 'Выберите город'),
+    address: z.string().nullable().optional(),
+    latitude: z.number().nullable().optional(),
+    longitude: z.number().nullable().optional(),
+    contactPhone: z.string().nullable().optional(),
     image: z.string().nullable().optional(),
-    categoryIds: z.array(z.number()).min(1, 'Выберите хотя бы одну категорию'),
-  });
+    images: z.array(z.string()).optional(),
+    categoryId: z.string().min(1, 'Выберите категорию'),
+});
 
 export type TFormAdtCreateValues = z.infer<typeof formAdtCreateSchema>

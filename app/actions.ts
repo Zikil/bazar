@@ -65,33 +65,3 @@ export async function registerUser(body: Prisma.UserCreateInput) {
 }
 
 
-export async function createAdt(body: Prisma.AdtCreateInput, categories: Category[]) {
-    try {
-
-        const currentUser = await getUserSession();
-
-        if (!currentUser) {
-            throw new Error('Not found user')
-        }
-
-
-        await prisma.adt.create({
-            data: {
-                title: body.title,
-                categories: {
-                    connect: categories?.map((category) => ({
-                        id: category.id,
-                    })),
-                },                
-                price: body.price,
-                description: body.description,
-                image: body.image,
-                location: body.location,
-                userId: Number(currentUser.id),
-            }
-        })
-    } catch (error) {
-        console.log('Error [create adt]', error);
-        throw error;
-    }
-}

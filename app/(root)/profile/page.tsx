@@ -74,7 +74,7 @@ export default async function Profile() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {user?.adts.map((adt) => (
-          <ListingCard key={adt.id} id={String(adt.id)} image={String(adt.image)} title={String(adt.title)} price={String(adt.price)} location={String(adt.location)} date={String(adt.createdAt)}/>
+          <ListingCard key={adt.id} id={String(adt.id)} image={String(adt.image)} title={String(adt.title)} price={String(adt.price)} location={String(adt.address)} date={String(adt.createdAt)}/>
         ))}
       </div>
     </main>

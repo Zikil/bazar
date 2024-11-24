@@ -8,7 +8,7 @@ import { prisma } from "@/prisma/prisma-client";
 import toast from "react-hot-toast";
 
 export default async function Home() {
-  const adts = await prisma.adt.findMany()
+  // const adts = await prisma.adt.findMany()
   // const session = await getUserSession()
   // // console.log(user)
   // console.log("session",session)

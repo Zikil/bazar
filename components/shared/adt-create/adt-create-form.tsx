@@ -1,19 +1,21 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formAdtCreateSchema, type TFormAdtCreateValues } from './schemas';
 import Image from 'next/image';
-import { Category } from '@prisma/client';
+import { Category, Country, City } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 interface CreateAdtFormProps {
   categories: Category[];
+  countries: Country[];
+  cities: City[];
 }
 
-export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
+export default function AdtCreateForm({ categories, countries, cities }: CreateAdtFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,11 +31,35 @@ export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
   } = useForm<TFormAdtCreateValues>({
     resolver: zodResolver(formAdtCreateSchema),
     defaultValues: {
-      categoryIds: [],
+      categoryId: '',
     }
   });
 
-  const selectedCategories = watch('categoryIds');
+  const selectedCategory = watch('categoryId');
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [filteredCities, setFilteredCities] = useState<City[]>([]);
+  const [selectedParentCategory, setSelectedParentCategory] = useState<string | null>(null);
+  const [filteredSubCategories, setFilteredSubCategories] = useState<Category[]>([]);
+
+  const parentCategories = useMemo(() => {
+    return categories.filter(cat => !cat.parentId);
+  }, [categories]);
+
+  useEffect(() => {
+    if (selectedCountry) {
+      const countryCities = cities.filter(city => city.countryId === selectedCountry);
+      setFilteredCities(countryCities);
+      setValue('cityId', '');
+    }
+  }, [selectedCountry, cities]);
+
+  useEffect(() => {
+    if (selectedParentCategory) {
+      const subCategories = categories.filter(cat => cat.parentId === selectedParentCategory);
+      setFilteredSubCategories(subCategories);
+      setValue('categoryId', '');
+    }
+  }, [selectedParentCategory, categories]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,28 +98,23 @@ export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
       }
 
       toast.success("Adt created successfully")
-      // Здесь можно добавить уведомление об успешном создании
       const data_f = await response.json();
-      // Редирект на страницу созданного объявления
       router.push(`/adt/${data_f.id}`);
-      // Обновляем кэш Next.js
-    //   router.refresh();
       
     } catch (error) {
       console.error('Error:', error);
-        //   toast.error("Error creating adt: " + error)
-      // Здесь можно добавить обработку ошибок
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleCategoryChange = (categoryId: number) => {
-    const currentCategories = watch('categoryIds') || [];
-    const updatedCategories = currentCategories.includes(categoryId)
-      ? currentCategories.filter(id => id !== categoryId)
-      : [...currentCategories, categoryId];
-    setValue('categoryIds', updatedCategories);
+  const handleCountryChange = (countryId: string) => {
+    setSelectedCountry(countryId);
+    setValue('countryId', countryId);
+  };
+
+  const handleCategoryParentChange = (categoryId: string) => {
+    setSelectedParentCategory(categoryId);
   };
 
   return (
@@ -144,40 +165,105 @@ export default function AdtCreateForm({ categories }: CreateAdtFormProps) {
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Категории*
-        </label>
-        <div className="mt-2 space-y-2">
-          {categories.map((category) => (
-            <label key={category.id} className="inline-flex items-center mr-4">
-              <input
-                type="checkbox"
-                className="form-checkbox h-4 w-4 text-indigo-600"
-                onChange={() => handleCategoryChange(category.id)}
-                checked={selectedCategories?.includes(category.id)}
-              />
-              <span className="ml-2">{category.name}</span>
-            </label>
-          ))}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Основная категория*
+          </label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            onChange={(e) => handleCategoryParentChange(e.target.value)}
+            value={selectedParentCategory || ''}
+          >
+            <option value="">Выберите категорию</option>
+            {parentCategories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.nameEn}
+              </option>
+            ))}
+          </select>
         </div>
-        {errors.categoryIds && (
-          <p className="mt-1 text-sm text-red-600">{errors.categoryIds.message}</p>
+
+        {selectedParentCategory && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Подкатегория*
+            </label>
+            <select
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              {...register('categoryId')}
+            >
+              <option value="">Выберите подкатегорию</option>
+              {filteredSubCategories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.nameEn}
+                </option>
+              ))}
+            </select>
+            {errors.categoryId && (
+              <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Страна*
+          </label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            onChange={(e) => handleCountryChange(e.target.value)}
+            value={selectedCountry || ''}
+          >
+            <option value="">Выберите страну</option>
+            {countries.map((country) => (
+              <option key={country.id} value={country.id}>
+                {country.nameEn}
+              </option>
+            ))}
+          </select>
+          {errors.countryId && (
+            <p className="mt-1 text-sm text-red-600">{errors.countryId.message}</p>
+          )}
+        </div>
+
+        {selectedCountry && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Город*
+            </label>
+            <select
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              {...register('cityId')}
+            >
+              <option value="">Выберите город</option>
+              {filteredCities.map((city) => (
+                <option key={city.id} value={city.id}>
+                  {city.nameEn}
+                </option>
+              ))}
+            </select>
+            {errors.cityId && (
+              <p className="mt-1 text-sm text-red-600">{errors.cityId.message}</p>
+            )}
+          </div>
         )}
       </div>
 
       <div>
-        <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-          Местоположение
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+          Адрес
         </label>
         <input
           type="text"
-          id="location"
-          {...register('location')}
+          id="address"
+          {...register('address')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         />
-        {errors.location && (
-          <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
+        {errors.address && (
+          <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
         )}
       </div>
 

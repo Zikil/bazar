@@ -6,60 +6,178 @@ datasource db {
     provider = "postgresql"
     url = env("POSTGRES_URL")
     directUrl = env("POSTGRES_URL_NON_POOLING") 
-
 }
 
+// Улучшенная модель пользователя
 model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
-  password String
+    id          Int       @id @default(autoincrement())
+    email       String    @unique
+    name        String?
+    password    String
+    phone       String?   // Добавляем телефон
+    avatar      String?   // Добавляем аватар
+    provider    String?
+    providerId  String?
+    role        Role      @default(USER)
+    isActive    Boolean   @default(true)  // Статус активности пользователя
+    lastLoginAt DateTime? // Отслеживание последнего входа
 
-  provider   String?
-  providerId String?
+    // Локация пользователя
+    countryId   String?
+    country     Country?  @relation(fields: [countryId], references: [id])
+    cityId      String?
+    city        City?     @relation(fields: [cityId], references: [id])
 
-  role    Role     @default(USER)
+    adts        Adt[]
+    favoriteAdts Favorite[]  
 
-  adts   Adt[]
-//   favoriteAdts Adt[]  
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
 
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
- 
+    @@index([email])
+    @@index([phone])
 }
 
+// Улучшенная модель объявления
 model Adt {
-  id         Int        @id @default(autoincrement())
-  
-  title      String
-  description String?
-  price String?
-  location String?
-  image String?
-  status Status @default(CHECKING)
+    id          Int       @id @default(autoincrement())
+    title       String
+    description String?   @db.Text  // Используем Text для длинных описаний
+    price       Decimal?  @db.Decimal(10, 2)  // Более точный тип для цены
+    status      Status    @default(CHECKING)
 
-  user     User?       @relation(fields: [userId], references: [id])
-  userId   Int?
-  
-  categories Category[]
-  
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+    // Геолокация
+    countryId   String
+    country     Country   @relation(fields: [countryId], references: [id])
+    cityId      String
+    city        City      @relation(fields: [cityId], references: [id])
+    address     String?
+    latitude    Float?
+    longitude   Float?
+
+    // Связи
+    user        User?     @relation(fields: [userId], references: [id])
+    userId      Int?
+    categoryId  String
+    category    Category  @relation(fields: [categoryId], references: [id])
+
+    // Статистика
+    views       Int       @default(0)
+    favorites   Favorite[]
+    image       String?
+    images      Image[]
+    
+    // Дополнительные поля
+    expiresAt   DateTime? // Срок действия объявления
+    isPromoted  Boolean   @default(false)  // Продвигаемое объявление
+    contactPhone String?  // Контактный телефон для объявления
+
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@index([countryId, cityId])
+    @@index([categoryId])
+    @@index([status])
 }
 
+// Улучшенная модель категории
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String
-  adts Adt[]
+    id          String    @id @default(cuid())
+    nameEn      String    // Название на английском
+    nameAr      String    // Название на арабском
+    slug        String    @unique
+    image       String?
+    icon        String?   // Иконка категории
+    parentId    String?   
+    parent      Category? @relation("SubCategories", fields: [parentId], references: [id])
+    children    Category[] @relation("SubCategories")
+    adts        Adt[]
+    isActive    Boolean   @default(true)
+    order       Int       @default(0)  // Для сортировки категорий
+    
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@index([parentId])
+    @@index([slug])
+}
+
+// Новая модель страны
+model Country {
+    id          String    @id @default(cuid())
+    nameEn      String    // Название на английском
+    nameAr      String    // Название на арабском
+    code        String    @unique // ISO код страны
+    flag        String?   // URL флага
+    currency    String    // Код валюты
+    dialCode    String    // Телефонный код
+    isActive    Boolean   @default(true)
+
+    cities      City[]
+    users       User[]
+    adts        Adt[]
+
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@index([code])
+}
+
+// Новая модель города
+model City {
+    id          String    @id @default(cuid())
+    nameEn      String    // Название на английском
+    nameAr      String    // Название на арабском
+    countryId   String
+    country     Country   @relation(fields: [countryId], references: [id])
+    latitude    Float?
+    longitude   Float?
+    isActive    Boolean   @default(true)
+
+    users       User[]
+    adts        Adt[]
+
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@index([countryId])
+    @@unique([nameEn, countryId])
+}
+
+model Favorite {
+    id          String    @id @default(cuid())
+    user        User?     @relation(fields: [userId], references: [id])
+    userId      Int?
+    adtId       Int
+    adt         Adt       @relation(fields: [adtId], references: [id])
+    createdAt   DateTime  @default(now())
+
+    @@unique([userId, adtId])
+    @@index([userId])
+    @@index([adtId])
+}
+
+model Image {
+    id          String    @id @default(cuid())
+    url         String
+    adtId       Int
+    adt         Adt       @relation(fields: [adtId], references: [id])
+    createdAt   DateTime  @default(now())
+    order       Int       @default(0)  // Для сортировки изображений
+
+    @@index([adtId])
 }
 
 enum Role {
-  USER
-  ADMIN
+    USER
+    ADMIN
+    MODERATOR  // Добавлен модератор
 }
 
 enum Status {
-  CHECKING
-  PUBLISHED
-  CLOSED
+    CHECKING
+    PUBLISHED
+    REJECTED   // Добавлен статус отклонения
+    CLOSED
+    EXPIRED    // Добавлен статус истечения срока
 }

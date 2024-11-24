@@ -8,11 +8,13 @@ const prisma = new PrismaClient();
 
 export default async function CreateListing() {
   const categories = await prisma.category.findMany();
+  const countries = await prisma.country.findMany();
+  const cities = await prisma.city.findMany();
 
   
   return (
 
-    <AdtCreateForm categories={categories} />
+    <AdtCreateForm categories={categories} countries={countries} cities={cities} />
 
 
     // <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

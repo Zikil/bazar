@@ -3,15 +3,16 @@
 // Импортируем необходимые компоненты и типы
 import { FC, useEffect, useState, useRef, useCallback } from 'react'
 import ListingCard from '../ListingCard'
-import { Adt } from '@prisma/client'
-import toast from 'react-hot-toast'
+import { AdtWithRelations } from '@/@types/prisma'
 
-// interface BlockAdtsProps {}
+interface BlockAdtsProps {
+    category?: string
+}
 
-export const BlockAdts: FC = () => {
+export const BlockAdts: FC<BlockAdtsProps> = ({ category }) => {
 
   // Состояния для хранения объявлений и управления их отображением
-  const [adts, setAdts] = useState<Adt[]>([]) // Массив объявлений
+  const [adts, setAdts] = useState<AdtWithRelations[]>([]) // Массив объявлений
   const [sortBy, setSortBy] = useState('new') // Тип сортировки
   const [isLoading, setIsLoading] = useState(true) // Флаг загрузки
   const [isLoadingMore, setIsLoadingMore] = useState(false) // Флаг загрузки дополнительных объявлений
@@ -42,8 +43,10 @@ export const BlockAdts: FC = () => {
         setIsLoading(true)
       }
       
+      const categoryParam = category ? `&category=${category}` : '';
+
       // Запрашиваем данные с сервера
-      const response = await fetch(`/api/adt?page=${pageNum}&sort=${sortBy}`)
+      const response = await fetch(`/api/adt?page=${pageNum}&sort=${sortBy}${categoryParam}`)
       const { data: newAdts, meta } = await response.json()
       
       // Обновляем список объявлений
@@ -136,7 +139,7 @@ export const BlockAdts: FC = () => {
                 title={adt.title}
                 image={String(adt.image)}
                 price={String(adt.price)}
-                location={String(adt.location)}
+                location={String(adt.city.nameEn)}
                 date={String(adt.createdAt)}
                 id={String(adt.id)}
               />

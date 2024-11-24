@@ -1,42 +1,51 @@
-import { adts, categories } from "./constant";
+import { countries, cities, categories, adts } from "./constant";
 import { prisma } from "./prisma-client";
 import { hashSync } from "bcrypt";
 
 
 async function up() {
+    // Создаем страны
+    await prisma.country.createMany({
+        data: countries
+    });
+
+    // Создаем города
+    await prisma.city.createMany({
+        data: cities
+    });
+
+    // Создаем пользователей
     await prisma.user.createMany({
         data: [
             {
                 name: "user",
-                email: "j@j.com",
+                email: "user@example.com",
                 password: hashSync("123456", 10),
-                // verified: new Date(),
                 role: "USER",
-                provider: 'credentials'
-            },
-            {
-                name: "user2",
-                email: "da@j.com",
-                password: hashSync("123456", 10),
-                // verified: new Date(),
-                role: "USER",
-                provider: 'credentials'
+                provider: 'credentials',
+                countryId: "country-1",
+                cityId: "city-1",
+                phone: "+971501234567"
             },
             {
                 name: "admin",
-                email: "d@j.com",
+                email: "admin@example.com",
                 password: hashSync("123456", 10),
-                // verified: new Date(),
                 role: "ADMIN",
-                provider: 'credentials'
+                provider: 'credentials',
+                countryId: "country-1",
+                cityId: "city-1",
+                phone: "+971501234568"
             }
         ]
     });
 
+    // Создаем категории
     await prisma.category.createMany({
         data: categories
     });
 
+    // Создаем объявления
     await prisma.adt.createMany({
         data: adts
     });
@@ -47,6 +56,8 @@ async function down() {
     await prisma.$executeRaw`TRUNCATE TABLE "User" RESTART IDENTITY CASCADE`;
     await prisma.$executeRaw`TRUNCATE TABLE "Category" RESTART IDENTITY CASCADE`;
     await prisma.$executeRaw`TRUNCATE TABLE "Adt" RESTART IDENTITY CASCADE`;
+    await prisma.$executeRaw`TRUNCATE TABLE "Country" RESTART IDENTITY CASCADE`;
+    await prisma.$executeRaw`TRUNCATE TABLE "City" RESTART IDENTITY CASCADE`;
 
 }
 
