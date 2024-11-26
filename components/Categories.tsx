@@ -23,7 +23,7 @@ export default async function Categories() {
             >
               <div className="bg-white p-2 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center justify-center min-h-[70px] border border-gray-100">
                 {category.icon && (
-                  <span className="text-xl mb-1 group-hover:scale-110 transition-transform duration-200">
+                  <span className="text-xl mb-1 ">
                     {category.icon}
                   </span>
                 )}

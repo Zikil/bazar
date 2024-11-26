@@ -7,6 +7,7 @@ import { Button } from './ui/button';
 import { ProfileButton } from './shared/profile-button';
 import { AuthModal } from './shared/modals/auth-modal/auth-modal';
 import AddButton from './shared/add-button';
+import { SearchBar } from './shared/search-bar'
 
 export default function Header() {
   const [openAuthModal, setOpenAuthModal] = React.useState(false)
@@ -24,14 +25,7 @@ export default function Header() {
           
           {/* Desktop Search */}
           <div className="hidden sm:flex flex-1 max-w-2xl mx-8">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search listings..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+            <SearchBar />
           </div>
 
           {/* Mobile Actions */}
@@ -68,14 +62,7 @@ export default function Header() {
         {/* Mobile Search */}
         {mobileSearchOpen && (
           <div className="sm:hidden py-2 border-t">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search listings..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+            <SearchBar />
           </div>
         )}
       </div>

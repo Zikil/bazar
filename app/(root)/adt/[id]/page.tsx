@@ -2,13 +2,14 @@
 
 import React from 'react';
 // import { useParams } from 'next/navigation';
-import { MapPin, Calendar, Phone, MessageCircle, Share2, Flag, Heart, Tag, Building, ChevronRight } from 'lucide-react';
+import { MapPin, Calendar, Phone, MessageCircle, Share2, Flag, Heart, Tag, Building, ChevronRight, Pencil } from 'lucide-react';
 import { prisma } from '@/prisma/prisma-client';
 import { notFound } from 'next/navigation';
 import { ShowNumberModal } from '@/components/shared/modals/show-number';
 import { getUserSession } from '@/lib/get-user-session';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { BreadcrumbsCategory } from '@/components/shared/breadcrumbs-category';
+import Link from 'next/link';
 
 type Params = Promise<{ id: string }>
 
@@ -36,6 +37,8 @@ export default async function AdtPage(props: { params: Params }) {
     }
 
     const user = adt.user
+
+    const isOwner = session?.id === String(adt.userId);
 
     return (
         <>
@@ -74,6 +77,15 @@ export default async function AdtPage(props: { params: Params }) {
                     </p>
 
                     <div className="flex gap-3">
+                        {isOwner && (
+                            <Link 
+                                href={`/adt/edit/${adt.id}`}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                            >
+                                <Pencil className="h-5 w-5" />
+                                <span>Редактировать</span>
+                            </Link>
+                        )}
                         <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
                             <Share2 className="h-5 w-5" />
                             <span>Поделиться</span>

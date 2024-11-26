@@ -5,29 +5,25 @@ import { getUserSession } from '@/lib/get-user-session';
 
 const prisma = new PrismaClient();
 
-
 // GET функция для получения списка объявлений с пагинацией
 export async function GET(request: Request) {
   try {
-    console.log("request",request)
     // Получаем параметры из URL
     const { searchParams } = new URL(request.url);
     
     // Параметры пагинации (по умолчанию: страница 1, 10 элементов на странице)
-    const page = Number(searchParams.get('page')) || 1;
-    const limit = Number(searchParams.get('limit')) || 10;
+    const page = Math.max(1, Number(searchParams.get('page')) || 1);
+    const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit')) || 10));
     const skip = (page - 1) * limit;
 
     // Получаем параметры фильтрации
     const category = searchParams.get('category');
     const cityId = searchParams.get('cityId');
 
-
     // Формируем условия фильтрации
     const where: Prisma.AdtWhereInput = {};
     
     if (category) {
-      // Сначала находим категорию и ее дочерние категории
       const categoryWithChildren = await prisma.category.findFirst({
         where: { slug: category },
         include: {
@@ -36,26 +32,20 @@ export async function GET(request: Request) {
       });
 
       if (categoryWithChildren) {
-        // Получаем ID текущей категории и всех дочерних категорий
         const categoryIds = [
           categoryWithChildren.id,
-          ...categoryWithChildren.children.map(child => child.id)
+          ...(categoryWithChildren.children?.map(child => child.id) || [])
         ];
 
-        // Используем IN для поиска объявлений во всех категориях
         where.categoryId = {
           in: categoryIds
         };
-      } else {
-        where.category = {
-          slug: category
-        };
       }
     }
+
     if (cityId) {
       where.cityId = cityId;
     }
-
 
     // Получаем общее количество объявлений для пагинации с учетом фильтров
     const total = await prisma.adt.count({ where });
@@ -83,11 +73,10 @@ export async function GET(request: Request) {
         country: true
       },
       orderBy: {
-        createdAt: 'desc' // Сортировка по дате создания (новые первыми)
+        createdAt: 'desc'
       }
     });
 
-    // Формируем метаданные для пагинации
     const meta = {
       currentPage: page,
       itemsPerPage: limit,
@@ -109,12 +98,11 @@ export async function GET(request: Request) {
   }
 }
 
-
 export async function POST(request: Request) {
   try {
     const session = await getUserSession();
     
-    if (!session) {
+    if (!session?.id) {
       return NextResponse.json(
         { error: 'Необходима авторизация' },
         { status: 401 }
@@ -123,10 +111,8 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     
-    // Валидация данных
     const validatedData = formAdtCreateSchema.parse(body);
     
-    // Получаем пользователя
     const user = await prisma.user.findUnique({
       where: { id: Number(session.id) }
     });
@@ -137,13 +123,13 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
-    // Создание объявления
+
     const adt = await prisma.adt.create({
       data: {
         title: validatedData.title,
         description: validatedData.description,
         price: validatedData.price,
-        address: validatedData.address,
+        address: validatedData.address || '',
         image: validatedData.image,
         userId: user.id,
         categoryId: validatedData.categoryId,
@@ -158,9 +144,86 @@ export async function POST(request: Request) {
     return NextResponse.json(adt, { status: 201 });
   } catch (error) {
     console.error('Error creating adt:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        { error: 'Ошибка валидации данных' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: 'Ошибка при создании объявления' },
-      { status: 400 }
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    
+    const session = await getUserSession();
+    
+    if (!session?.id) {
+      return NextResponse.json(
+        { error: 'Необходима авторизация' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID объявления не указан' },
+        { status: 400 }
+      );
+    }
+    
+    const validatedData = formAdtCreateSchema.parse(updateData);
+    
+    const existingAdt = await prisma.adt.findFirst({
+      where: {
+        id: Number(id),
+        userId: Number(session.id)
+      }
+    });
+
+    if (!existingAdt) {
+      return NextResponse.json(
+        { error: 'Объявление не найдено или у вас нет прав на его редактирование' },
+        { status: 404 }
+      );
+    }
+
+    const updatedAdt = await prisma.adt.update({
+      where: { id: Number(id) },
+      data: {
+        title: validatedData.title,
+        description: validatedData.description,
+        price: validatedData.price,
+        address: validatedData.address || '',
+        image: validatedData.image,
+        categoryId: validatedData.categoryId,
+        countryId: validatedData.countryId,
+        cityId: validatedData.cityId
+      },
+      include: {
+        category: true
+      }
+    });
+    
+    return NextResponse.json(updatedAdt);
+  } catch (error) {
+    console.error('Error updating adt:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        { error: 'Ошибка валидации данных' },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Ошибка при обновлении объявления' },
+      { status: 500 }
     );
   }
 }

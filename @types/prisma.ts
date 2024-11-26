@@ -1,3 +1,3 @@
-import { Adt, Category, City, User } from "@prisma/client";
+import { Adt, Category, City, Country, User } from "@prisma/client";
 
-export type AdtWithRelations = Adt & { category: Category; city: City; user: User };
+export type AdtWithRelations = Adt & { category: Category; city: City; country: Country; user: User };
